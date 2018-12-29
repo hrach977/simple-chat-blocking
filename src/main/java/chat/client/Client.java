@@ -1,5 +1,6 @@
 package chat.client;
 
+import chat.wrapper.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,47 +14,51 @@ import java.util.function.Consumer;
 public class Client {
     private static final Logger LOGGER = LoggerFactory.getLogger(Client.class);
     private final Socket socket;
-    private final DataInputStream inputStream;
-    private final DataOutputStream outputStream;
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final InputStream inputStream;
+    private final OutputStream outputStream;
+    //private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final Thread readerThread;
+    private final String username;
 
-    private Consumer<String> messageConsumer;
+    private Consumer<Message> messageConsumer;
 
 
-    public Client(String host, int port) throws IOException {
+    public Client(String host, int port, String username) throws IOException {
         LOGGER.info("initiating a connection with {}:{}", host, port);
         this.socket = new Socket(host, port);
-        this.inputStream = new DataInputStream(socket.getInputStream());
-        this.outputStream = new DataOutputStream(socket.getOutputStream());
+        this.inputStream = socket.getInputStream();
+        this.outputStream = socket.getOutputStream();
+        this.username = username;
 
 
-        executor.execute(() -> {
-          //  new ClientReader()
+        this.readerThread = new Thread(() -> {
             LOGGER.info("listening for messages");
 
             while (true) {
                 try {
-                    String messageFromServer = inputStream.readUTF();
-                    LOGGER.debug("<< {}", messageFromServer);
+                    //String messageFromServer = inputStream.readUTF();
+                    Message messageFromServer = Message.readFromStream(inputStream);
+                    LOGGER.info("<< {}", messageFromServer);
                     if(messageConsumer != null){
                         messageConsumer.accept(messageFromServer);
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    LOGGER.error("failed to read a message", e);
+                    break;
                 }
             }
         });
+        this.readerThread.start();
     }
 
-    public void send(String message) throws IOException {
-        LOGGER.debug(">> " + message);
-        outputStream.writeUTF(message);
+    public void send(Message message) throws IOException {
+        LOGGER.info(">> " + message);
+        message.writeToStream(outputStream);
     }
 
 
-    public void onMessageFromServer(Consumer<String> consumer) {
+    public void onMessageFromServer(Consumer<Message> consumer) {
         this.messageConsumer = consumer;
     }
-
 
 }

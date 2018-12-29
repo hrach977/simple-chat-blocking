@@ -1,5 +1,6 @@
 package chat.server;
 
+import chat.wrapper.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,15 +28,13 @@ public class Server {
             LOGGER.info("accepted a client from {}", clientSocket.getInetAddress());
 
             AcceptedClient client = new AcceptedClient(clientSocket);
-            client.onMessage(message -> {
-                sendToEveryone(message);
-            });
+            client.onMessage(this::sendToEveryone);
 
             clients.add(client);
         }
     }
 
-    public void sendToEveryone(String message) {
+    public void sendToEveryone(Message message) {
         clients.forEach(client -> {
             try {
                 client.send(message);

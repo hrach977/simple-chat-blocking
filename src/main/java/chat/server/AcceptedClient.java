@@ -1,11 +1,10 @@
 package chat.server;
 
+import chat.wrapper.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -15,22 +14,24 @@ public class AcceptedClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(AcceptedClient.class);
 
     private final Socket socket;
-    private final DataInputStream inputStream;
-    private final DataOutputStream outputStream;
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final InputStream inputStream;
+    private final OutputStream outputStream;
+    private final Thread readerThread;
+    //private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    private Consumer<String> consumer;
+    private Consumer<Message> consumer;
 
     public AcceptedClient(Socket socket) throws IOException {
         this.socket = socket;
-        this.inputStream = new DataInputStream(socket.getInputStream());
-        this.outputStream = new DataOutputStream(socket.getOutputStream());
+        this.inputStream = socket.getInputStream();
+        this.outputStream = socket.getOutputStream();
 
-        executor.execute(() -> {
+        this.readerThread = new Thread(() -> {
             while (true) {
                 try {
-                    String messageFromClient = inputStream.readUTF();
-                    LOGGER.debug("<< " + messageFromClient);
+                    Message messageFromClient = Message.readFromStream(inputStream);
+                    //System.out.println("inside accepted client message: " + messageFromClient);
+                    LOGGER.info("<< " + messageFromClient);
                     if (consumer != null) {
                         consumer.accept(messageFromClient);
                     }
@@ -41,14 +42,15 @@ public class AcceptedClient {
             }
 
         });
+        this.readerThread.start();
     }
 
-    public void onMessage(Consumer<String> consumer) {
+    public void onMessage(Consumer<Message> consumer) {
         this.consumer = consumer;
     }
 
-    public void send(String message) throws IOException {
-        LOGGER.debug(">> " + message);
-        outputStream.writeUTF(message);
+    public void send(Message message) throws IOException {
+        LOGGER.info(">> " + message);
+        message.writeToStream(outputStream);
     }
 }

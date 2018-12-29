@@ -1,6 +1,8 @@
 package chat;
 
 import chat.client.Client;
+import chat.wrapper.Message;
+import client.proto.ChatMessageProto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,20 +16,26 @@ public class ClientMain {
     public static void main(String[] args) throws IOException {
         //Client client = new Client("localhost", 8080);
 
-        System.out.println("please enter host");
-        String host = input.nextLine();
-        System.out.println("please enter port");
-        int port = input.nextInt();
+//        System.out.println("please enter host");
+//        String host = input.nextLine();
+//        System.out.println("please enter port");
+//        int port = input.nextInt();
+//        System.out.println("please enter your username");
+//        String username = input.nextLine();
 
-        Client client = new Client(host, port);
+        Client client = new Client("localhost", 8080, "alice");
 
         client.onMessageFromServer(messageFromServer -> {
             LOGGER.info("client << {}", messageFromServer);
         });
+
         while (true) {
-            LOGGER.info("please enter your message");
-            String message = new Scanner(System.in).nextLine();
-            client.send(message);
+            LOGGER.info("please enter the content for the message");
+
+            String content = input.nextLine();
+            Message chatMessage = new Message(System.currentTimeMillis(), "alice", content);
+            client.send(chatMessage);
+
         }
     }
 }

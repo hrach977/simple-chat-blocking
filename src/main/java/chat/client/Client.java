@@ -36,7 +36,7 @@ public class Client {
             while (true) {
                 try {
                     Message messageFromServer = Message.readFromStream(inputStream);
-                    LOGGER.info("<< {}", messageFromServer);
+                    LOGGER.debug("<< {}", messageFromServer);
                     if(messageConsumer != null){
                         messageConsumer.accept(messageFromServer);
                     }
@@ -49,7 +49,7 @@ public class Client {
     }
 
     public void send(Message message) throws IOException {
-        LOGGER.info(">> " + message);
+        LOGGER.debug(">> " + message);
         message.writeToStream(outputStream);
     }
 

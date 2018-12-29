@@ -29,7 +29,7 @@ public class AcceptedClient {
             while (true) {
                 try {
                     Message messageFromClient = Message.readFromStream(inputStream);
-                    LOGGER.info("<< " + messageFromClient);
+                    LOGGER.debug("<< " + messageFromClient);
                     if (consumer != null) {
                         consumer.accept(messageFromClient);
                     }
@@ -47,7 +47,7 @@ public class AcceptedClient {
     }
 
     public void send(Message message) throws IOException {
-        LOGGER.info(">> " + message);
+        LOGGER.debug(">> " + message);
         message.writeToStream(outputStream);
     }
 }

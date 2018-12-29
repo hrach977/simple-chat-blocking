@@ -16,8 +16,7 @@ public class AcceptedClient {
     private final Socket socket;
     private final InputStream inputStream;
     private final OutputStream outputStream;
-    private final Thread readerThread;
-    //private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     private Consumer<Message> consumer;
 
@@ -26,11 +25,10 @@ public class AcceptedClient {
         this.inputStream = socket.getInputStream();
         this.outputStream = socket.getOutputStream();
 
-        this.readerThread = new Thread(() -> {
+       executor.execute(() -> {
             while (true) {
                 try {
                     Message messageFromClient = Message.readFromStream(inputStream);
-                    //System.out.println("inside accepted client message: " + messageFromClient);
                     LOGGER.info("<< " + messageFromClient);
                     if (consumer != null) {
                         consumer.accept(messageFromClient);
@@ -42,7 +40,6 @@ public class AcceptedClient {
             }
 
         });
-        this.readerThread.start();
     }
 
     public void onMessage(Consumer<Message> consumer) {

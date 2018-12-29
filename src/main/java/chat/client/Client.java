@@ -16,8 +16,7 @@ public class Client {
     private final Socket socket;
     private final InputStream inputStream;
     private final OutputStream outputStream;
-    //private final ExecutorService executor = Executors.newSingleThreadExecutor();
-    private final Thread readerThread;
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final String username;
 
     private Consumer<Message> messageConsumer;
@@ -31,12 +30,11 @@ public class Client {
         this.username = username;
 
 
-        this.readerThread = new Thread(() -> {
+         executor.execute(() -> {
             LOGGER.info("listening for messages");
 
             while (true) {
                 try {
-                    //String messageFromServer = inputStream.readUTF();
                     Message messageFromServer = Message.readFromStream(inputStream);
                     LOGGER.info("<< {}", messageFromServer);
                     if(messageConsumer != null){
@@ -48,7 +46,6 @@ public class Client {
                 }
             }
         });
-        this.readerThread.start();
     }
 
     public void send(Message message) throws IOException {

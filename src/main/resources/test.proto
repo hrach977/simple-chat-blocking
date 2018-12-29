@@ -1,0 +1,17 @@
+syntax = "proto2";
+
+package try.prot;
+
+option java_package = "client.proto";
+option java_outer_classname = "ChatMessageProto";
+
+
+message ChatMessage {
+    // v1
+    required int64 time = 1;
+    required string sender = 2;
+    required string content = 3;
+
+    // v2
+    optional string metadata = 4;
+}

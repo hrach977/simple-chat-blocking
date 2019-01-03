@@ -1,0 +1,41 @@
+syntax = "proto2";
+
+package try.protv2;
+
+option java_package = "clientv2.proto";
+option java_outer_classname = "ChatMessage";
+
+
+message ChatMsg {
+    required int64 time = 1;
+    optional string metadata = 42;
+
+    oneof msg {
+        ServerStatus serverStatus = 2;
+        UserLoggedIn userLoggedIn = 3;
+        UserLoggedOut userLoggedOut = 4;
+        UserSentGlobalMessage userSentGlobalMessage = 5;
+        Failure failure = 6;
+    }
+
+    message ServerStatus {
+        required string status = 1;
+    }
+
+    message UserLoggedIn {
+        required string userName = 1;
+    }
+
+    message UserLoggedOut {
+        required string userName = 1;
+    }
+
+    message UserSentGlobalMessage {
+        required string userName = 2;
+        required string message = 1;
+    }
+
+    message Failure {
+        optional string message = 1;
+    }
+}

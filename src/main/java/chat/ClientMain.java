@@ -16,14 +16,16 @@ public class ClientMain {
     public static void main(String[] args) throws IOException {
         //Client client = new Client("localhost", 8080);
 
-//        System.out.println("please enter host");
-//        String host = input.nextLine();
-//        System.out.println("please enter port");
-//        int port = input.nextInt();
-//        System.out.println("please enter your username");
-//        String username = input.nextLine();
 
-        Client client = new Client("localhost", 8080, "alice");
+        System.out.println("please enter your username");
+        String username = input.nextLine();
+        System.out.println("please enter host");
+        String host = input.nextLine();
+        System.out.println("please enter port");
+        int port = input.nextInt();
+
+
+        Client client = new Client(host, port, username);
 
         client.onMessageFromServer(messageFromServer -> {
             LOGGER.info("client << {}", messageFromServer);
@@ -33,7 +35,7 @@ public class ClientMain {
             LOGGER.info("please enter the content for the message");
 
             String content = input.nextLine();
-            Message chatMessage = new Message(System.currentTimeMillis(), "alice", content);
+            Message chatMessage = new Message(System.currentTimeMillis(), username, content);
             client.send(chatMessage);
 
         }

@@ -34,6 +34,7 @@ public class Server {
             log.info("accepted a client from {}", clientSocket.getInetAddress());
 
             ConnectedClient client = new ConnectedClient(clientSocket);
+            //broadcastMessage(MyMessage.userLoggedIn(System.currentTimeMillis(), client.getusername));
             client.onMessage(this::broadcastMessage);
 
             clients.add(client);
@@ -49,6 +50,13 @@ public class Server {
                 e.printStackTrace();
             }
         });
+//        clients.stream().filter(client -> !(this==client)).forEach(client -> {
+//            try {
+//                client.send(message);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        });
     }
 
     public void onUserLoggedIn(BiConsumer<Long, String> consumer) {

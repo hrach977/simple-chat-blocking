@@ -15,17 +15,25 @@ public class ClientMain {
     public static void main(String[] args) throws IOException {
         Client client = new Client("localhost", 8080, "alice");
 
-        client.onMessageFromServer(messageFromServer -> {
-            log.info("client << {}", messageFromServer);
-        });
+        try {
+            //Client client = new Client("localhost", 8080, "alice");
 
-        while (true) {
-            log.info("please enter the content for the message");
+            client.onMessageFromServer(messageFromServer -> {
+                log.info("client << {}", messageFromServer);
+            });
 
-            String content = input.nextLine();
-            MyMessage chatMessage = MyMessage.userSentGlobalMessage(System.currentTimeMillis(), client.getUsername(), content);
-            client.send(chatMessage);
+            client.send(MyMessage.userLoggedIn(System.currentTimeMillis(), client.getUsername()));
 
+            while (true) {
+                log.info("please enter the content for the message");
+
+                String content = input.nextLine();
+                MyMessage chatMessage = MyMessage.userSentGlobalMessage(System.currentTimeMillis(), client.getUsername(), content);
+                client.send(chatMessage);
+
+            }
+        } finally {
+            client.send(MyMessage.userLoggedOut(System.currentTimeMillis(), client.getUsername()));
         }
     }
 }

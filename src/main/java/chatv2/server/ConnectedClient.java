@@ -19,6 +19,11 @@ public class ConnectedClient {
     private final OutputStream outputStream;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private Consumer<MyMessage> consumer;
+    //private final String username;
+
+//    public void setNickname(String username) {
+//        this.username = username;
+//    }
 
     public ConnectedClient(Socket socket) throws IOException {
         this.socket = socket;
@@ -26,9 +31,11 @@ public class ConnectedClient {
         this.outputStream = socket.getOutputStream();
 
         executor.execute(() -> {
+
             while (true) {
                 try {
                     MyMessage messageFromClient = MyMessage.readFromStream(inputStream);
+                    //if (messageFromClient == null)
                     log.debug("<< " + messageFromClient);
                     if (consumer != null) {
                         consumer.accept(messageFromClient);

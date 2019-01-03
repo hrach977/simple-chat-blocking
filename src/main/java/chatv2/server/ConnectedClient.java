@@ -1,4 +1,4 @@
-package chatv2.client;
+package chatv2.server;
 
 import chatv2.wrapper.MyMessage;
 import org.slf4j.Logger;
@@ -12,51 +12,41 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
-public class Client {
-    private static final Logger log = LoggerFactory.getLogger(Client.class);
+public class ConnectedClient {
+    private static final Logger log = LoggerFactory.getLogger(ConnectedClient.class);
     private final Socket socket;
     private final InputStream inputStream;
     private final OutputStream outputStream;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
-    private final String username;
-    private Consumer<MyMessage> messageConsumer;
+    private Consumer<MyMessage> consumer;
 
-    public Client(String host, int port, String username) throws IOException {
-        log.info("initiating a connection with {}:{}", host, port);
-        this.socket = new Socket(host, port);
+    public ConnectedClient(Socket socket) throws IOException {
+        this.socket = socket;
         this.inputStream = socket.getInputStream();
         this.outputStream = socket.getOutputStream();
-        this.username = username;
-
 
         executor.execute(() -> {
-            log.info("listening for messages");
-
             while (true) {
                 try {
-                    MyMessage messageFromServer = MyMessage.readFromStream(inputStream);
-                    log.debug("<< {}", messageFromServer);
-                    if(messageConsumer != null){
-                        messageConsumer.accept(messageFromServer);
+                    MyMessage messageFromClient = MyMessage.readFromStream(inputStream);
+                    log.debug("<< " + messageFromClient);
+                    if (consumer != null) {
+                        consumer.accept(messageFromClient);
                     }
                 } catch (IOException e) {
-                    log.error("failed to read a message", e);
+                    log.error("failed to read the message. Exiting.", e);
                     break;
                 }
             }
         });
     }
 
-    public void onMessageFromServer(Consumer<MyMessage> consumer) {
-        this.messageConsumer = consumer;
+    public void onMessage(Consumer<MyMessage> consumer) {
+        this.consumer = consumer;
     }
 
     public void send(MyMessage message) throws IOException {
         log.debug(">> " + message);
         message.writeToStream(outputStream);
-    }
-
-    public String getUsername() {
-        return username;
     }
 }

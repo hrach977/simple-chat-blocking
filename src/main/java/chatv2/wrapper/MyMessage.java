@@ -61,12 +61,30 @@ public class MyMessage {
         );
     }
 
+    public static MyMessage failureMessage(long time, String message) {
+        return new MyMessage(ChatMessage.ChatMsg.newBuilder()
+                .setTime(time)
+                .setFailure(
+                        ChatMessage.ChatMsg.Failure.newBuilder()
+                        .setMessage(message)
+                        .build()
+                ).build());
+    }
+
     public static MyMessage readFromStream(InputStream inputStream) throws IOException {
         return new MyMessage(ChatMessage.ChatMsg.parseDelimitedFrom(inputStream));
     }
 
     public void writeToStream(OutputStream outputStream) throws IOException {
         chatMsg.writeDelimitedTo(outputStream);
+    }
+
+    public String getContent() {
+        return chatMsg.getUserSentGlobalMessage().getMessage();
+    }
+
+    public String getUsername() {
+        return chatMsg.getUserSentGlobalMessage().getUserName();
     }
 
     @Override

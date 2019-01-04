@@ -15,9 +15,9 @@ public class Server {
     private static final Logger log = LoggerFactory.getLogger(Server.class);
 
     //several consumers for each of the events (UserLoggedIn, UserSentGlobalMessage etc)
-    private BiConsumer<Long, String> serverStatusConsumer;
-    private BiConsumer<Long, String> userLoggedInConsumer;
-    private BiConsumer<Long, String> userLoggedOutConsumer;
+//    private BiConsumer<Long, String> serverStatusConsumer;
+//    private BiConsumer<Long, String> userLoggedInConsumer;
+//    private BiConsumer<Long, String> userLoggedOutConsumer;
     private final ServerSocket serverSocket;
     private final List<ConnectedClient> clients = new ArrayList<>();
 
@@ -37,35 +37,38 @@ public class Server {
             //broadcastMessage(MyMessage.userLoggedIn(System.currentTimeMillis(), client.getusername));
             client.onMessage(this::broadcastMessage);
 
+            //maybe try getting the messages right from there, so that to be able to manage the list of the connected clients
+
             clients.add(client);
         }
     }
 
     private void broadcastMessage(MyMessage message) {
-        //clients.stream().filter(client -> !client.getUsername.equals(username)).forEach(client -> client.send(message));
-        clients.stream().forEach(client -> {
+        clients.forEach(client -> {
             try {
-                client.send(message);
+                System.out.printf("SOCKET STATUS: " + client.getSocket().isClosed());
+                if (client.getSocket().isClosed()) {
+                    clients.remove(client);
+                } else {
+                    client.send(message);
+                }
+//                if (message.getContent().equalsIgnoreCase("bye")) {
+//                    continue;
+//                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
         });
-//        clients.stream().filter(client -> !(this==client)).forEach(client -> {
-//            try {
-//                client.send(message);
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        });
+
     }
 
-    public void onUserLoggedIn(BiConsumer<Long, String> consumer) {
-        userLoggedInConsumer = consumer;
-    }
-
-    public void onUserLoggedOut(BiConsumer<Long, String> consumer) {
-        userLoggedOutConsumer = consumer;
-    }
+//    public void onUserLoggedIn(BiConsumer<Long, String> consumer) {
+//        userLoggedInConsumer = consumer;
+//    }
+//
+//    public void onUserLoggedOut(BiConsumer<Long, String> consumer) {
+//        userLoggedOutConsumer = consumer;
+//    }
 
     //public void onServerStatus
 

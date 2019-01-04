@@ -13,10 +13,13 @@ public class ClientMain {
     private static final Scanner input = new Scanner(System.in);
 
     public static void main(String[] args) throws IOException {
-        Client client = new Client("localhost", 8080, "alice");
+        System.out.println("Enter host");
+        String host = input.nextLine();
+        System.out.println("Enter username");
+        String username = input.nextLine();
+        Client client = new Client(host, 8080, username);
 
         try {
-            //Client client = new Client("localhost", 8080, "alice");
 
             client.onMessageFromServer(messageFromServer -> {
                 log.info("client << {}", messageFromServer);
@@ -28,12 +31,23 @@ public class ClientMain {
                 log.info("please enter the content for the message");
 
                 String content = input.nextLine();
+//                if (content == null) {
+//                    client.send(MyMessage.userLoggedOut(System.currentTimeMillis(), client.getUsername()));
+//                    break;
+//                }
+                if (content.equalsIgnoreCase("bye")) {
+                    client.send(MyMessage.userLoggedOut(System.currentTimeMillis(), client.getUsername()));
+                    break;
+                }
+
                 MyMessage chatMessage = MyMessage.userSentGlobalMessage(System.currentTimeMillis(), client.getUsername(), content);
                 client.send(chatMessage);
 
             }
         } finally {
-            client.send(MyMessage.userLoggedOut(System.currentTimeMillis(), client.getUsername()));
+            //client.send(MyMessage.userLoggedOut(System.currentTimeMillis(), client.getUsername()));
+            client.closeResources();
+            System.exit(1000);
         }
     }
 }

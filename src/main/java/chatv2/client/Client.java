@@ -4,6 +4,7 @@ import chatv2.wrapper.MyMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -45,6 +46,16 @@ public class Client {
                 }
             }
         });
+    }
+
+    public void closeResources(Closeable... resources) {
+        for (Closeable resource : resources) {
+            try {
+                resource.close();
+            } catch (IOException e) {
+                log.error("failed while closing", e);
+            }
+        }
     }
 
     public void onMessageFromServer(Consumer<MyMessage> consumer) {
